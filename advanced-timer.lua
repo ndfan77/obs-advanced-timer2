@@ -21,6 +21,8 @@ hotkey_id_pause     = obs.OBS_INVALID_HOTKEY_ID
 
 function delta_time(year, month, day, hour, minute, second)
 	local now = os.time()
+	local currmin = tonumber(os.date("%M", now))
+	local currsec = tonumber(os.date("%S", now))
 
 	if (year == -1) then
 		year = os.date("%Y", now)
@@ -32,6 +34,13 @@ function delta_time(year, month, day, hour, minute, second)
 
 	if (day == -1) then
 		day = os.date("%d", now)
+	end
+
+	if (hour == -1) then
+		hour = tonumber(os.date("%H", now))
+  		if (minute < currmin or (minute == currmin and second <= currsec)) then
+			hour = hour + 1
+		end
 	end
 
 	local future = os.time{year=year, month=month, day=day, hour=hour, min=minute, sec=second}
@@ -338,6 +347,9 @@ function settings_modified(props, prop, settings)
 		obs.obs_property_set_visible(p_month, false)
 		obs.obs_property_set_visible(p_day, false)
 		obs.obs_property_set_visible(p_hour, true)
+		obs.obs_property_set_description(p_hour, "Hour (-1,0-23)")
+		obs.obs_property_int_set_limits(p_hour, -1, 23, 1)
+		obs.obs_property_set_long_description(p_hour, "Use -1 to display time remaining until the next occurrence of the Minutes value.")
 		obs.obs_property_set_visible(p_minutes, true)
 		obs.obs_property_set_visible(p_seconds, true)
 		obs.obs_property_set_visible(p_stop_text, true)
@@ -351,6 +363,9 @@ function settings_modified(props, prop, settings)
 		obs.obs_property_set_visible(p_month, true)
 		obs.obs_property_set_visible(p_day, true)
 		obs.obs_property_set_visible(p_hour, true)
+		obs.obs_property_set_description(p_hour, "Hour (0-23)")
+		obs.obs_property_int_set_limits(p_hour, 0, 23, 1)
+		obs.obs_property_set_long_description(p_hour, "")
 		obs.obs_property_set_visible(p_minutes, true)
 		obs.obs_property_set_visible(p_seconds, true)
 		obs.obs_property_set_visible(p_stop_text, true)
@@ -405,7 +420,7 @@ function script_properties()
 	obs.obs_properties_add_int(props, "year", "Year", 1971, 100000000, 1)
 	obs.obs_properties_add_int(props, "month", "Month (1-12)", 1, 12, 1)
 	obs.obs_properties_add_int(props, "day", "Day (1-31)", 1, 31, 1)
-	obs.obs_properties_add_int(props, "hour", "Hour (0-24)", 0, 24, 1)
+	obs.obs_properties_add_int(props, "hour", "Hour (0-23)", 0, 23, 1)
 	obs.obs_properties_add_int(props, "minutes", "Minutes (0-59)", 0, 59, 1)
 	obs.obs_properties_add_int(props, "seconds", "Seconds (0-59)", 0, 59, 1)
 	local f_prop = obs.obs_properties_add_text(props, "format", "Format", obs.OBS_TEXT_DEFAULT)
